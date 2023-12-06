@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <stdbool.h>
+#define QUANTUM 6
 
 typedef struct Node_{
     int tempo;
@@ -55,7 +56,6 @@ int chanceProcesso() {
     return 0;
 }
 
-// processa a lista fisrt come first saved
 Node *processaFCFS(Node *begin, int conta_processos) {
     if(begin != NULL) {
         for(int i = 0; i < begin->tempo; i++) {
@@ -88,6 +88,40 @@ Node *processaMaisCurto(Node *begin, int conta_processos) {
     return begin;
 }
 
+// a função recebe um novo NO com as unidades de tempo que não foram processadas
+// e as coloca no final da lista, visando o método Round-Robin
+Node *insereNoFinal(Node *begin, Node *resto) {
+    Node *pont = begin;
+    while(pont->prox != NULL) { // percorre a lista até o final
+        pont = pont->prox;
+    }
+    pont->prox = resto; // coloca o restante do processo no final da lista
+    return begin;
+}
+
+Node *processaRoundRobin(Node *begin, int conta_processos) {
+    if(begin != NULL) {
+        for(int i = 0; i < QUANTUM; i++) { // processa até o tempo atingir o limite do Quantum
+            int chance = chanceProcesso();
+            if(chance == 1) {
+                begin = insereProcesso(begin);
+            }
+        }
+        // checa se sobraram tempos (ELSE: o processo foi executado por completo)
+        if(begin->tempo > QUANTUM) {
+            Node *resto = (Node*)malloc(sizeof(Node));
+            // coloca as unidades de tempo restantes em um novo NO (resto)
+            resto->tempo = begin->tempo - QUANTUM;
+            begin = insereNoFinal(begin, resto);
+            printf("Processo %d foi executado e restaram %d tempos\n", conta_processos, resto->tempo);
+        } else {
+            printf("Processo %d foi executado e não restaram unidades de tempos\n", conta_processos);
+        }
+        begin = removeProcesso(begin); // remove o processo executado
+    }
+    return begin;
+}
+
 int main() {
     srand(time(NULL));
     Node *begin = (Node*)malloc(sizeof(Node)); //inicio da lista
@@ -95,7 +129,10 @@ int main() {
     int aux = 0;
     int resposta = -1;
 
-    printf("Digite o método: ");
+    printf("------------------------\nMÉTODOS DE ESCALONAMENTO (escolha um para executar):\n");
+    printf("1 - First come first saved\n");
+    printf("2 - Job mais curto primeiro\n");
+    printf("3 - Round-Robin\n");
     scanf("%d", &resposta);
     
     begin = insereProcesso(begin);
@@ -111,10 +148,17 @@ int main() {
     } else if(resposta == 2) {
         while(aux < 50) {
             conta_processos++;
-            //begin recebe o processo já executado com os novos processos possivelmente criados
             begin = processaMaisCurto(begin, conta_processos);
             aux++;
         }
+    } else if(resposta == 3) {
+        while(aux < 50) {
+            conta_processos++;
+            begin = processaRoundRobin(begin, conta_processos);
+            aux++;
+        }
+    } else {
+        printf("Opção inválida!\n");
     }
 
     return 0;
