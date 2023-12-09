@@ -14,6 +14,9 @@ Node *insereProcesso(Node *begin) {
     Node *novo_no = (Node*)malloc(sizeof(Node));
     novo_no->tempo = rand() % 20 + 1; // número aleatório de 1-20
     Node *pont = begin;
+    if(begin == NULL) {
+        return novo_no;
+    }
     while(pont->prox != NULL) { // percorrendo a fila até achar o fim
         pont = pont->prox;
     }
@@ -124,7 +127,7 @@ Node *processaRoundRobin(Node *begin, int conta_processos) {
 
 int main() {
     srand(time(NULL));
-    Node *begin = (Node*)malloc(sizeof(Node)); //inicio da lista
+    Node *begin = NULL; //inicio da lista
     int conta_processos = 0;
     int aux = 0;
     int resposta = -1;
