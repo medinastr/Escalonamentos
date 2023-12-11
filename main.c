@@ -31,21 +31,29 @@ Node *insereOrdenado(Node *begin) {
     if(begin == NULL) { // caso não tenha processos
         return novo_no;
     }
-    Node *ant = begin;
-    Node *pont = begin->prox;
-    while(pont != NULL && novo_no->tempo < pont->tempo) { // percorre a lista
+    if(novo_no->tempo < begin->tempo) {
+        novo_no->prox = begin;
+        return novo_no;
+    }
+    Node *ant = NULL;
+    Node *pont = begin;
+    while(pont != NULL && novo_no->tempo > pont->tempo) { // percorre a lista
         ant = pont;
         pont = pont->prox;
     }
-    ant->prox = novo_no; // insere novo no na lista
-    novo_no->prox = pont;
+    if(pont != NULL) {
+        novo_no->prox = pont;
+    }
+    ant->prox = novo_no;
 
     return begin;
 }
 
 Node *removeProcesso(Node *begin) {
-    if(begin != NULL) {
+    Node *pont = begin;
+    if(pont != NULL) {
         begin = begin->prox;
+        free(pont);
     }
     return begin;
 }
@@ -59,16 +67,18 @@ int chanceProcesso() {
     return 0;
 }
 
-Node *processaFCFS(Node *begin, int conta_processos) {
+Node *processaFCFS(Node *begin) {
     if(begin != NULL) {
+        int processos_criados = 0;
         for(int i = 0; i < begin->tempo; i++) {
             int chance = chanceProcesso();
             // se chance for verdadeira a lista recebe mais um processo nessa unidade de tempo
             if(chance == 1) {
+                processos_criados++;
                 begin = insereProcesso(begin);
             }
         }
-        printf("Processo %d foi executado em %d tempos\n", conta_processos, begin->tempo);
+        printf("Processo executado em %d tempos -- %d processos criados.\n", begin->tempo, processos_criados);
         begin = removeProcesso(begin); // remove o processo já executado
     }
     return begin;
@@ -76,16 +86,18 @@ Node *processaFCFS(Node *begin, int conta_processos) {
 
 // O Job mais curto não está funcionando, é um problema nessa função,
 // no segundo while do main ou no insereOrdenado
-Node *processaMaisCurto(Node *begin, int conta_processos) {
+Node *processaMaisCurto(Node *begin) {
     if(begin != NULL) {
+        int processos_criados = 0;
         for(int i = 0; i < begin->tempo; i++) {
             int chance = chanceProcesso();
             if(chance == 1) {
-                begin = insereOrdenado(begin->prox); // unica diferença para o processaFCFS
+                processos_criados++;
+                begin->prox = insereOrdenado(begin->prox);
                 // (begin->prox) para ordenar sem mexer no NO que está sendo processado
             }
         }
-        printf("Processo %d foi executado em %d tempos\n", conta_processos, begin->tempo);
+        printf("Processo executado -- %d unidades de tempo -- %d processos criados\n", begin->tempo, processos_criados);
         begin = removeProcesso(begin);
     }
     return begin;
@@ -102,11 +114,13 @@ Node *insereNoFinal(Node *begin, Node *resto) {
     return begin;
 }
 
-Node *processaRoundRobin(Node *begin, int conta_processos) {
+Node *processaRoundRobin(Node *begin) {
     if(begin != NULL) {
+        int processos_criados = 0;
         for(int i = 0; i < QUANTUM; i++) { // processa até o tempo atingir o limite do Quantum
             int chance = chanceProcesso();
             if(chance == 1) {
+                processos_criados++;
                 begin = insereProcesso(begin);
             }
         }
@@ -116,9 +130,9 @@ Node *processaRoundRobin(Node *begin, int conta_processos) {
             // coloca as unidades de tempo restantes em um novo NO (resto)
             resto->tempo = begin->tempo - QUANTUM;
             begin = insereNoFinal(begin, resto);
-            printf("Processo %d foi executado e restaram %d tempos\n", conta_processos, resto->tempo);
+            printf("Processo executado -- %d unidades de tempo restantes -- %d processos criados.\n", resto->tempo, processos_criados);
         } else {
-            printf("Processo %d foi executado e não restaram unidades de tempos\n", conta_processos);
+            printf("Processo executado -- 0 unidades de tempo restantes -- %d processos criados\n", processos_criados);
         }
         begin = removeProcesso(begin); // remove o processo executado
     }
@@ -128,7 +142,6 @@ Node *processaRoundRobin(Node *begin, int conta_processos) {
 int main() {
     srand(time(NULL));
     Node *begin = NULL; //inicio da lista
-    int conta_processos = 0;
     int aux = 0;
     int resposta = -1;
 
@@ -138,27 +151,48 @@ int main() {
     printf("3 - Round-Robin\n");
     scanf("%d", &resposta);
     
-    begin = insereProcesso(begin);
     if(resposta == 1) {
         // while(true) { 
         while(aux < 50) { // sem loop infinito para testar
-            conta_processos++;
-            // begin recebe o processo já executado e removido 
-            // com os novos processos possivelmente criados
-            begin = processaFCFS(begin, conta_processos);
-            aux++;
+            if(begin == NULL) {
+                int chance = chanceProcesso();
+                if(chance == 1) {
+                    begin = insereProcesso(begin);
+                    printf("Processo criado fora de um processamento\n");
+                }
+                aux++;
+            } else {
+                begin = processaFCFS(begin);
+                aux++;
+            }
         }
     } else if(resposta == 2) {
         while(aux < 50) {
-            conta_processos++;
-            begin = processaMaisCurto(begin, conta_processos);
-            aux++;
+            if(begin == NULL) {
+                int chance = chanceProcesso();
+                if(chance == 1) {
+                    begin = insereOrdenado(begin);
+                    printf("Processo criado fora de um processamento\n");
+                }
+                aux++;
+            } else {
+                begin = processaMaisCurto(begin);
+                aux++;
+            }
         }
     } else if(resposta == 3) {
         while(aux < 50) {
-            conta_processos++;
-            begin = processaRoundRobin(begin, conta_processos);
-            aux++;
+            if(begin == NULL) {
+                int chance = chanceProcesso();
+                if(chance == 1) {
+                    begin = insereProcesso(begin);
+                    printf("Processo criado fora de um processamento\n");
+                }
+                aux++;
+            } else {
+                begin = processaRoundRobin(begin);
+                aux++;
+            }
         }
     } else {
         printf("Opção inválida!\n");
