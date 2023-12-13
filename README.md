@@ -1,4 +1,7 @@
 # Escalonamentos
-A estrutura do código está completa, só não consegui terminar o método Job mais curto primeiro, o problema está na função processaMaisCurto e/ou no insereOrdenado.
+Trabalho finalizado.
+O projeto tem como finalidade criar processos em um NO e executa-los em diversas iterações. Para isso foram usados 3 métodos.
 
-A variável begin é só o ponteiro pro início da lista e o conta_processos é inútil, eu só passei ela como parâmetro para gerar a saída mostrando os processos.
+First come first saved: processa o primeiro processo da lista.
+Job mais curto primeiro: processa os processos com menores unidades de tempo primeiro.
+Round-robin: processa com um limite de 6 iterações, caso o processo tenha mais que 6 tempos o restante de tempo será colocado no final da lista de processamento.
