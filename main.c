@@ -1,3 +1,17 @@
+/*+-------------------------------------------------------------+
+| UNIFAL – Universidade Federal de Alfenas. |
+| BACHARELADO EM CIENCIA DA COMPUTACAO. |
+| Trabalho..: Escalonamento de processos |
+| Disciplina: Algoritmos e Estrutura de Dados II – Pratica |
+| Professor.: Fellipe Rey |
+| Aluno(s)..: Gustavo Benfica
+|             Gustavo Borin
+|             Pedro Medina
+|             Vinicius Gomes
+| Beltrano da Silva. (MAXIMO 4 ALUNOS). |
+| Data......: 15/12/2023 |
++-------------------------------------------------------------+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -162,7 +176,6 @@ Node *processaRoundRobin(Node *begin) {
 int main() {
     srand(time(NULL));
     Node *begin = NULL; //inicio da lista
-    int aux = 0;
     int resposta = -1;
 
     printf("------------------------\nMÉTODOS DE ESCALONAMENTO (escolha um para executar):\n");
@@ -175,26 +188,28 @@ int main() {
     if(resposta == 1) { 
         while(true) {
             if(begin == NULL) {
-                printf("Sem processos nesse tempo\n");
                 int chance = chanceProcesso();
                 if(chance == 1) {
                     begin = insereProcesso(begin);
                     printf("Processo criado fora de um processamento\n");
                     mostrarProcessos(begin);
+                } else {
+                    printf("Sem processos nesse tempo\n");
                 }
             } else {
                 begin = processaFCFS(begin);
             }
         }
     } else if(resposta == 2) {
-        while(aux < 10) {
+        while(true) {
             if(begin == NULL) {
-                printf("Sem processos nesse tempo\n");
                 int chance = chanceProcesso();
                 if(chance == 1) {
                     begin = insereOrdenado(begin);
                     printf("Processo criado fora de um processamento\n");
                     mostrarProcessos(begin);
+                } else {
+                    printf("Sem processos nesse tempo\n");
                 }
             } else {
                 begin = processaMaisCurto(begin);
@@ -203,12 +218,13 @@ int main() {
     } else if(resposta == 3) {
         while(true) {
             if(begin == NULL) {
-                printf("Sem processos nesse tempo\n");
                 int chance = chanceProcesso();
                 if(chance == 1) {
                     begin = insereProcesso(begin);
                     printf("Processo criado fora de um processamento\n");
                     mostrarProcessos(begin);
+                } else {
+                    printf("Sem processos nesse tempo\n");
                 }
             } else {
                 begin = processaRoundRobin(begin);
